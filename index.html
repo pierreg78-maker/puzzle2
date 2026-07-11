@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle 3x3 bis</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* EN-TÊTE ET SÉLECTEUR */
+        #header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            gap: 15px;
+        }
+
+        #header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #333;
+        }
+
+        #carousel {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .chevron {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #555;
+            padding: 0 5px;
+            user-select: none;
+        }
+
+        .chevron:hover {
+            color: #000;
+        }
+
+        #thumb-container {
+            cursor: pointer;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+            overflow: hidden;
+            width: 80px;
+            height: 80px;
+            transition: border-color 0.2s;
+        }
+
+        #thumb-container:hover {
+            border-color: #007bff;
+        }
+
+        #thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* MESSAGE DE FÉLICITATIONS */
+        #congrats-message {
+            font-size: 1.4rem;
+            color: #d32f2f;
+            font-weight: bold;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #congrats-message.visible {
+            opacity: 1;
+        }
+
+        /* GRILLE DU PUZZLE */
+        #puzzle-board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 2px;
+            background-color: #ccc;
+            padding: 2px;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .piece {
+            width: 100px;
+            height: 100px;
+            background-size: 300px 300px; /* 3 * 100px */
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .piece:hover {
+            transform: scale(0.95);
+        }
+
+        .piece.empty {
+            visibility: hidden; /* Garde la place mais rend invisible */
+            cursor: default;
+        }
+
+        .piece.empty:hover {
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Titre et Sélecteur -->
+    <div id="header">
+        <h2>Au choix :</h2>
+        <div id="carousel">
+            <button class="chevron" id="prev-btn">&lt;</button>
+            <div id="thumb-container" title="Cliquez pour rejouer cette image">
+                <img id="thumb" src="/image_1.jpg" alt="Miniature puzzle">
+            </div>
+            <button class="chevron" id="next-btn">&gt;</button>
+        </div>
+    </div>
+
+    <!-- Message de félicitations (placé ici, sous le titre) -->
+    <div id="congrats-message">🎉 Félicitations ! Puzzle terminé ! Un autre ?</div>
+
+    <!-- Grille du puzzle -->
+    <div id="puzzle-board"></div>
+
+    <script>
+        const TOTAL_PUZZLES = 10;
+        const GRID_SIZE = 3;
+        const PIECE_SIZE = 100; // en pixels
+
+        let currentPuzzle = 1;
+        let boardState = []; // Contient les numéros de pièces (0 à 8, où 8 est la case vide)
+        let emptyIndex = 8;  // Position de la case vide dans le tableau boardState
+
+        // Éléments du DOM
+        const boardEl = document.getElementById('puzzle-board');
+        const thumbEl = document.getElementById('thumb');
+        const congratsEl = document.getElementById('congrats-message');
+        const thumbContainer = document.getElementById('thumb-container');
+
+        // Fonction pour obtenir le chemin de l'image
+        function getImagePath(puzzleNumber) {
+            return `/image_${puzzleNumber}.jpg`;
+        }
+
+        // Initialisation d'un nouveau puzzle
+        function initPuzzle() {
+            congratsEl.classList.remove('visible');
+            
+            // Mettre à jour la miniature
+            thumbEl.src = getImagePath(currentPuzzle);
+
+            // Créer le tableau ordonné [0, 1, 2, 3, 4, 5, 6, 7, 8]
+            boardState = Array.from({length: GRID_SIZE * GRID_SIZE}, (_, i) => i);
+            emptyIndex = 8;
+
+            // Mélanger en faisant des mouvements valides (garantit que c'est résolvable)
+            shuffleBoard();
+
+            // Afficher le plateau
+            renderBoard();
+        }
+
+        // Mélange aléatoire mais toujours résolvable
+        function shuffleBoard() {
+            let shuffleMoves = 1000;
+            while(shuffleMoves > 0) {
+                const neighbors = getMovablePieces();
+                const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+                
+                // Inverser les valeurs dans le tableau
+                boardState[emptyIndex] = boardState[randomNeighbor];
+                boardState[randomNeighbor] = GRID_SIZE * GRID_SIZE - 1;
+                emptyIndex = randomNeighbor;
+                
+                shuffleMoves--;
+            }
+        }
+
+        // Récupère les index des pièces adjacentes à la case vide
+        function getMovablePieces() {
+            const neighbors = [];
+            const row = Math.floor(emptyIndex / GRID_SIZE);
+            const col = emptyIndex % GRID_SIZE;
+
+            if (row > 0) neighbors.push(emptyIndex - GRID_SIZE); // Haut
+            if (row < GRID_SIZE - 1) neighbors.push(emptyIndex + GRID_SIZE); // Bas
+            if (col > 0) neighbors.push(emptyIndex - 1); // Gauche
+            if (col < GRID_SIZE - 1) neighbors.push(emptyIndex + 1); // Droite
+
+            return neighbors;
+        }
+
+        // Affiche les pièces sur le plateau
+        function renderBoard() {
+            boardEl.innerHTML = '';
+            const imgPath = getImagePath(currentPuzzle);
+
+            boardState.forEach((pieceValue, index) => {
+                const piece = document.createElement('div');
+                piece.classList.add('piece');
+
+                if (pieceValue === GRID_SIZE * GRID_SIZE - 1) {
+                    // C'est la case vide
+                    piece.classList.add('empty');
+                } else {
+                    // Calculer la position de fond de l'image
+                    const origCol = pieceValue % GRID_SIZE;
+                    const origRow = Math.floor(pieceValue / GRID_SIZE);
+                    
+                    piece.style.backgroundImage = `url('${imgPath}')`;
+                    piece.style.backgroundPosition = `-${origCol * PIECE_SIZE}px -${origRow * PIECE_SIZE}px`;
+                    
+                    // Action au clic
+                    piece.addEventListener('click', () => movePiece(index));
+                }
+
+                boardEl.appendChild(piece);
+            });
+        }
+
+        // Déplacer une pièce
+        function movePiece(clickedIndex) {
+            // Vérifier si la pièce cliquée est adjacente à la case vide
+            const movable = getMovablePieces();
+            if (movable.includes(clickedIndex)) {
+                // Échanger dans le tableau logique
+                boardState[emptyIndex] = boardState[clickedIndex];
+                boardState[clickedIndex] = GRID_SIZE * GRID_SIZE - 1;
+                emptyIndex = clickedIndex;
+
+                // Rafraîchir l'affichage
+                renderBoard();
+
+                // Vérifier la victoire
+                checkWin();
+            }
+        }
+
+        // Vérifier si le puzzle est résolu
+        function checkWin() {
+            for (let i = 0; i < boardState.length; i++) {
+                if (boardState[i] !== i) return; // Pas encore résolu
+            }
+            // Si on arrive ici, c'est gagné !
+            congratsEl.classList.add('visible');
+        }
+
+        // --- ÉVÉNEMENTS CARROUSEL ---
+
+        document.getElementById('prev-btn').addEventListener('click', () => {
+            currentPuzzle--;
+            if (currentPuzzle < 1) currentPuzzle = TOTAL_PUZZLES; // Boucle
+            initPuzzle();
+        });
+
+        document.getElementById('next-btn').addEventListener('click', () => {
+            currentPuzzle++;
+            if (currentPuzzle > TOTAL_PUZZLES) currentPuzzle = 1; // Boucle
+            initPuzzle();
+        });
+
+        // Cliquer sur la miniature relance le même puzzle
+        thumbContainer.addEventListener('click', () => {
+            initPuzzle();
+        });
+
+        // --- DÉMARRAGE ---
+        // Lancer le premier puzzle au chargement de la page
+        initPuzzle();
+
+    </script>
+</body>
+</html>
