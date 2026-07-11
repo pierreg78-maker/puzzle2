@@ -5,17 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Puzzle 3x3 Accessible</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f4f9;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
         }
-        /* BOUTON DE RETOUR A L'ACCUEIL */
-         .back-link {
+
+        /* BOUTON RETOUR */
+        #top-bar {
+            width: 100%;
+            max-width: 500px; /* Ne s'étire pas trop sur PC */
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 10px;
+        }
+
+        #back-btn {
+            background-color: #e0e0e0;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #333;
+        }
+
+        #back-btn:hover {
+            background-color: #cccccc;
+        }
+
+        /* EN-TÊTE ET SÉLECTEUR */
+        #header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        #header h2 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: #333;
+        }
+
+        #carousel {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .chevron {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #555;
+            padding: 0 8px;
+            user-select: none;
+            line-height: 1;
+        }
+
+        .chevron:hover {
+            color: #0056b3;
+        }
+
+        #thumb-container {
+            cursor: pointer;
+            border: 3px solid #ccc;
+            border-radius: 6px;
+            overflow: hidden;
+            width: 70px;
+            height: 70px;
+            transition: border-color 0.2s;
+        }
+
+        #thumb-container:hover {
+            border-color: #007bff;
+        }
+
+        #thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* MESSAGE DE FÉLICITATIONS */
+        #congrats-message {
+            font-size: 1.3rem;
+            color: #d32f2f;
+            font-weight: bold;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        #congrats-message.visible {
+            opacity: 1;
+        }
+
+        /* GRILLE DU PUZZLE */
+        #puzzle-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            background-color: #bbb;
+            padding: 4px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .piece {
+            border: 2px solid white;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+        /* Effet Aimanté (Sélection) */
+        .piece.selected {
+            transform: scale(1.05);
+            border-color: #ffeb3b;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            z-index: 10;
+        }
+
+        .piece:hover:not(.selected) {
+            border-color: #e0e0e0;
+        }
+       
+       .back-link {
     position: absolute;
     top: 5px;
     left: 5px;
@@ -40,162 +180,69 @@
 
   .back-link:hover { filter: brightness(1.08); }
   .back-link:active { transform: scale(.95); }
-        
-        /* EN-TÊTE ET SÉLECTEUR */
-        #header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 10px;
-            gap: 15px;
-        }
 
-        #header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: #333;
-        }
 
-        #carousel {
-            display: flex;
-            align-items: center;
-            background: white;
-            padding: 5px 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .chevron {
-            background: none;
-            border: none;
-            font-size: 2rem; /* Plus gros pour les personnes âgées */
-            cursor: pointer;
-            color: #555;
-            padding: 0 10px;
-            user-select: none;
-            line-height: 1;
-        }
-
-        .chevron:hover {
-            color: #0056b3;
-        }
-
-        #thumb-container {
-            cursor: pointer;
-            border: 3px solid #ccc;
-            border-radius: 6px;
-            overflow: hidden;
-            width: 85px;
-            height: 85px;
-            transition: border-color 0.2s;
-        }
-
-        #thumb-container:hover {
-            border-color: #007bff;
-        }
-
-        #thumb {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* MESSAGE DE FÉLICITATIONS */
-        #congrats-message {
-            font-size: 1.5rem;
-            color: #d32f2f;
-            font-weight: bold;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-            opacity: 0;
-            transition: opacity 0.5s ease-in-out;
-        }
-
-        #congrats-message.visible {
-            opacity: 1;
-        }
-
-        /* GRILLE DU PUZZLE */
-        #puzzle-board {
-            display: grid;
-            grid-template-columns: repeat(3, 110px); /* Un peu plus grand pour faciliter le clic */
-            grid-template-rows: repeat(3, 110px);
-            gap: 4px;
-            background-color: #bbb;
-            padding: 4px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .piece {
-            width: 110px;
-            height: 110px;
-            background-size: 330px 330px; /* 3 * 110px */
-            border: 3px solid white;
-            border-radius: 4px;
-            box-sizing: border-box;
-            cursor: pointer;
-            /* Transition fluide pour l'effet "aimant" quand on clique */
-            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-        }
-
-        /* Effet quand la pièce est sélectionnée (L'aimant l'attrape) */
-        .piece.selected {
-            transform: scale(1.05); /* Elle se soulève légèrement */
-            border-color: #ffeb3b; /* Bordure jaune vif */
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3); /* Grande ombre pour le relief */
-            z-index: 10;
-        }
-
-        /* Petit effet quand on survole sans cliquer */
-        .piece:hover:not(.selected) {
-            border-color: #e0e0e0;
-        }
     </style>
 </head>
 <body>
-    
-    <!-- Bouton de retour à l'accueil -->
-    <a class="back-link" href="https://pierreg78-maker.github.io/Atelier/">Retour<br>à<br>l'accueil</a>
-    
-    <!-- Titre et Sélecteur -->
+
+    <!-- Bouton de retour ajouté ici -->
+   <a class="back-link" href="https://pierreg78-maker.github.io/Atelier/">Retour<br>à<br>l'accueil</a>
+
     <div id="header">
-            <div id="carousel">
+      
+        <div id="carousel">
             <button class="chevron" id="prev-btn">&lt;</button>
-            <div id="thumb-container" title="Cliquez pour mélanger cette image">
+            <div id="thumb-container" title="Choisir ce puzzle">
                 <img id="thumb" src="images/image_1.jpg" alt="Miniature puzzle">
             </div>
             <button class="chevron" id="next-btn">&gt;</button>
         </div>
     </div>
 
-    <!-- Message de félicitations (sous le titre) -->
-    <div id="congrats-message">🎉 Bravo ! Un autre ?</div>
+    <div id="congrats-message">🎉 Bravo! Un autre?</div>
 
-    <!-- Grille du puzzle -->
     <div id="puzzle-board"></div>
 
     <script>
-        const TOTAL_PUZZLES = 15;
+        const TOTAL_PUZZLES = 25;
         const GRID_SIZE = 3;
-        const PIECE_SIZE = 110; // en pixels (doit match le CSS)
 
         let currentPuzzle = 1;
-        let boardState = []; // Contient les numéros de pièces (0 à 8)
-        let selectedPieceIndex = null; // Stocke l'index de la pièce cliquée en premier
+        let boardState = [];
+        let selectedPieceIndex = null;
+        
+        let state = {
+            boardSize: 0,
+            pieceSize: 0,
+            gap: 0
+        };
 
-        // Éléments du DOM
         const boardEl = document.getElementById('puzzle-board');
         const thumbEl = document.getElementById('thumb');
         const congratsEl = document.getElementById('congrats-message');
         const thumbContainer = document.getElementById('thumb-container');
 
         function getImagePath(puzzleNumber) {
-            return `images/image_${puzzleNumber}.jpg`;
+            return `puzzle_3x3/image_${puzzleNumber}.jpg`;
+        }
+
+        // --- CALCUL RESPONSIVE 80% ---
+        function calculateSizes() {
+            const screenWidth = window.innerWidth;
+            // 80% de la largeur, plafonné à 500px pour les grands écrans
+            state.boardSize = Math.min(Math.floor(screenWidth * 0.8), 500);
+            
+            state.gap = Math.max(3, Math.floor(state.boardSize * 0.015));
+
+            const padding = 4; 
+            state.pieceSize = Math.floor((state.boardSize - padding * 2 - state.gap * 2) / 3);
+
+            boardEl.style.width = state.boardSize + 'px';
+            boardEl.style.height = state.boardSize + 'px';
+            boardEl.style.gridTemplateColumns = `repeat(3, ${state.pieceSize}px)`;
+            boardEl.style.gridTemplateRows = `repeat(3, ${state.pieceSize}px)`;
+            boardEl.style.gap = state.gap + 'px';
         }
 
         function initPuzzle() {
@@ -203,76 +250,60 @@
             selectedPieceIndex = null;
             thumbEl.src = getImagePath(currentPuzzle);
 
-            // Créer le tableau ordonné [0, 1, 2, 3, 4, 5, 6, 7, 8]
             boardState = Array.from({length: GRID_SIZE * GRID_SIZE}, (_, i) => i);
-
-            // Mélanger (N'importe quel mélange est résolvable dans un puzzle à échange)
             shuffleBoard();
-
+            
+            calculateSizes();
             renderBoard();
         }
 
-        // Mélange simple (Fisher-Yates)
         function shuffleBoard() {
             for (let i = boardState.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [boardState[i], boardState[j]] = [boardState[j], boardState[i]];
             }
-            // S'assurer qu'il n'est pas déjà résolu par hasard
             if (isSolved()) shuffleBoard();
         }
 
         function renderBoard() {
             boardEl.innerHTML = '';
             const imgPath = getImagePath(currentPuzzle);
+            const bgSize = state.pieceSize * 3;
 
             boardState.forEach((pieceValue, index) => {
                 const piece = document.createElement('div');
                 piece.classList.add('piece');
 
-                // Calculer la position de fond de l'image
                 const origCol = pieceValue % GRID_SIZE;
                 const origRow = Math.floor(pieceValue / GRID_SIZE);
                 
                 piece.style.backgroundImage = `url('${imgPath}')`;
-                piece.style.backgroundPosition = `-${origCol * PIECE_SIZE}px -${origRow * PIECE_SIZE}px`;
+                piece.style.backgroundSize = `${bgSize}px ${bgSize}px`;
+                piece.style.backgroundPosition = `-${origCol * state.pieceSize}px -${origRow * state.pieceSize}px`;
                 
-                // Si cette pièce était sélectionnée avant le rendu, on lui remet la classe
                 if (index === selectedPieceIndex) {
                     piece.classList.add('selected');
                 }
 
-                // Action au clic
                 piece.addEventListener('click', () => handlePieceClick(index));
-
                 boardEl.appendChild(piece);
             });
         }
 
-        // Logique de sélection et d'échange (L'effet "Aimant")
+        // --- SYSTÈME AIMANTÉ (CLIQUER POUR ÉCHANGER) ---
         function handlePieceClick(clickedIndex) {
-            
-            // 1er cas : Aucune pièce n'était sélectionnée
             if (selectedPieceIndex === null) {
                 selectedPieceIndex = clickedIndex;
-                renderBoard(); // On re-dessine pour afficher le style .selected
-            } 
-            // 2ème cas : On clique sur la même pièce (on la déselectionne)
-            else if (selectedPieceIndex === clickedIndex) {
+                renderBoard();
+            } else if (selectedPieceIndex === clickedIndex) {
                 selectedPieceIndex = null;
                 renderBoard();
-            } 
-            // 3ème cas : Une pièce était sélectionnée, on clique sur une différente -> ÉCHANGE
-            else {
-                // Échanger les valeurs dans le tableau logique
+            } else {
                 let temp = boardState[selectedPieceIndex];
                 boardState[selectedPieceIndex] = boardState[clickedIndex];
                 boardState[clickedIndex] = temp;
 
-                // Remettre la sélection à null
                 selectedPieceIndex = null;
-
-                // Re-dessiner et vérifier la victoire
                 renderBoard();
                 checkWin();
             }
@@ -291,17 +322,38 @@
             }
         }
 
-        // --- ÉVÉNEMENTS CARROUSEL ---
+        // --- PRÉCHARGEMENT POUR LA 3G ---
+        function prechargementSuivant() {
+            let prochainPuzzle = currentPuzzle + 1;
+            if (prochainPuzzle > TOTAL_PUZZLES) prochainPuzzle = 1;
+            let imgCache = new Image();
+            imgCache.src = getImagePath(prochainPuzzle);
+        }
+
+        // --- ÉVÉNEMENTS ---
+        
+        // Action bouton retour
+        document.getElementById('back-btn').addEventListener('click', () => {
+            window.history.back(); // Revient simplement à la page précédente
+        });
+
+        window.addEventListener('resize', () => {
+            calculateSizes();
+            renderBoard();
+        });
+
         document.getElementById('prev-btn').addEventListener('click', () => {
             currentPuzzle--;
             if (currentPuzzle < 1) currentPuzzle = TOTAL_PUZZLES;
             initPuzzle();
+            prechargementSuivant();
         });
 
         document.getElementById('next-btn').addEventListener('click', () => {
             currentPuzzle++;
             if (currentPuzzle > TOTAL_PUZZLES) currentPuzzle = 1;
             initPuzzle();
+            prechargementSuivant();
         });
 
         thumbContainer.addEventListener('click', () => {
@@ -310,6 +362,7 @@
 
         // --- DÉMARRAGE ---
         initPuzzle();
+        prechargementSuivant();
 
     </script>
 </body>
