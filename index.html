@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle 3x3 Accessible</title>
+    <title>Puzzle 3x3</title>
     <style>
         * {
             box-sizing: border-box;
@@ -20,45 +20,17 @@
             min-height: 100vh;
         }
 
-        /* BOUTON RETOUR */
-        #top-bar {
-            width: 100%;
-            max-width: 500px; /* Ne s'étire pas trop sur PC */
-            display: flex;
-            justify-content: flex-start;
-            margin-bottom: 10px;
-        }
+        /* ----------------------------------------- */
+        /* COLLEZ ICI VOTRE CSS DU BOUTON RETOUR     */
+        /* ----------------------------------------- */
 
-        #back-btn {
-            background-color: #e0e0e0;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1.2rem;
-            border-radius: 8px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            font-weight: bold;
-            color: #333;
-        }
 
-        #back-btn:hover {
-            background-color: #cccccc;
-        }
-
-        /* EN-TÊTE ET SÉLECTEUR */
+        /* SÉLECTEUR (Sans le "Au choix :") */
         #header {
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 10px;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        #header h2 {
-            margin: 0;
-            font-size: 1.3rem;
-            color: #333;
         }
 
         #carousel {
@@ -128,7 +100,6 @@
         /* GRILLE DU PUZZLE */
         #puzzle-board {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
             background-color: #bbb;
             padding: 4px;
             border-radius: 8px;
@@ -143,7 +114,6 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* Effet Aimanté (Sélection) */
         .piece.selected {
             transform: scale(1.05);
             border-color: #ffeb3b;
@@ -154,8 +124,8 @@
         .piece:hover:not(.selected) {
             border-color: #e0e0e0;
         }
-       
-       .back-link {
+
+        .back-link {
     position: absolute;
     top: 5px;
     left: 5px;
@@ -186,14 +156,17 @@
 </head>
 <body>
 
-    <!-- Bouton de retour ajouté ici -->
-   <a class="back-link" href="https://pierreg78-maker.github.io/Atelier/">Retour<br>à<br>l'accueil</a>
+    <!-- ----------------------------------------- -->
+    <!-- COLLEZ ICI LE HTML EXACT DE VOTRE BOUTON RETOUR -->
+    <!-- ----------------------------------------- -->
+ <a class="back-link" href="https://pierreg78-maker.github.io/Atelier/">Retour<br>à<br>l'accueil</a>
+
 
     <div id="header">
-      
         <div id="carousel">
             <button class="chevron" id="prev-btn">&lt;</button>
-            <div id="thumb-container" title="Choisir ce puzzle">
+            <div id="thumb-container" title="Cliquez pour mélanger cette image">
+                <!-- Remplacez LIEN_VERS_VOS_IMAGES par votre vrai dossier -->
                 <img id="thumb" src="images/image_1.jpg" alt="Miniature puzzle">
             </div>
             <button class="chevron" id="next-btn">&gt;</button>
@@ -223,16 +196,15 @@
         const congratsEl = document.getElementById('congrats-message');
         const thumbContainer = document.getElementById('thumb-container');
 
+        // Remplacez LIEN_VERS_VOS_IMAGES par votre vrai chemin
         function getImagePath(puzzleNumber) {
-            return `puzzle_3x3/image_${puzzleNumber}.jpg`;
+            return `images/image_${puzzleNumber}.jpg`;
         }
 
         // --- CALCUL RESPONSIVE 80% ---
         function calculateSizes() {
             const screenWidth = window.innerWidth;
-            // 80% de la largeur, plafonné à 500px pour les grands écrans
             state.boardSize = Math.min(Math.floor(screenWidth * 0.8), 500);
-            
             state.gap = Math.max(3, Math.floor(state.boardSize * 0.015));
 
             const padding = 4; 
@@ -241,7 +213,6 @@
             boardEl.style.width = state.boardSize + 'px';
             boardEl.style.height = state.boardSize + 'px';
             boardEl.style.gridTemplateColumns = `repeat(3, ${state.pieceSize}px)`;
-            boardEl.style.gridTemplateRows = `repeat(3, ${state.pieceSize}px)`;
             boardEl.style.gap = state.gap + 'px';
         }
 
@@ -277,6 +248,11 @@
                 const origCol = pieceValue % GRID_SIZE;
                 const origRow = Math.floor(pieceValue / GRID_SIZE);
                 
+                // CORRECTION DU BUG D'AFFICHAGE SUR MOBILE :
+                // On force la taille en pixels sur chaque pièce
+                piece.style.width = state.pieceSize + 'px';
+                piece.style.height = state.pieceSize + 'px';
+
                 piece.style.backgroundImage = `url('${imgPath}')`;
                 piece.style.backgroundSize = `${bgSize}px ${bgSize}px`;
                 piece.style.backgroundPosition = `-${origCol * state.pieceSize}px -${origRow * state.pieceSize}px`;
@@ -290,7 +266,7 @@
             });
         }
 
-        // --- SYSTÈME AIMANTÉ (CLIQUER POUR ÉCHANGER) ---
+        // --- SYSTÈME AIMANTÉ ---
         function handlePieceClick(clickedIndex) {
             if (selectedPieceIndex === null) {
                 selectedPieceIndex = clickedIndex;
@@ -322,7 +298,7 @@
             }
         }
 
-        // --- PRÉCHARGEMENT POUR LA 3G ---
+        // --- PRÉCHARGEMENT RÉSEAU LENT ---
         function prechargementSuivant() {
             let prochainPuzzle = currentPuzzle + 1;
             if (prochainPuzzle > TOTAL_PUZZLES) prochainPuzzle = 1;
@@ -331,12 +307,6 @@
         }
 
         // --- ÉVÉNEMENTS ---
-        
-        // Action bouton retour
-        document.getElementById('back-btn').addEventListener('click', () => {
-            window.history.back(); // Revient simplement à la page précédente
-        });
-
         window.addEventListener('resize', () => {
             calculateSizes();
             renderBoard();
