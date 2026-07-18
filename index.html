@@ -98,17 +98,17 @@
         }
 
         /* GRILLE DU PUZZLE */
-        #puzzle-board {
-            display: grid;
-         background-color: #f5f5f5;
-padding: 1px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
+    #puzzle-board {
+    display: grid;
+    background: transparent;
+    padding: 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
 
-        .piece {
-    border: 1px dashed #e2e2e2;
-    border-radius: 3px;
+.piece {
+    border: 1px dashed #d8d8d8;
+    border-radius: 0;
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     -webkit-tap-highlight-color: transparent;
@@ -205,7 +205,7 @@ padding: 1px;
         function calculateSizes() {
             const screenWidth = window.innerWidth;
             state.boardSize = Math.min(Math.floor(screenWidth * 0.8), 500);
-            state.gap = Math.max(3, Math.floor(state.boardSize * 0.015));
+            state.gap = 0;
 
             const padding = 4; 
             state.pieceSize = Math.floor((state.boardSize - padding * 2 - state.gap * 2) / 3);
