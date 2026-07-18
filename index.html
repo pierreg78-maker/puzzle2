@@ -100,29 +100,47 @@
         /* GRILLE DU PUZZLE */
     #puzzle-board {
     display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 0;
     background: transparent;
     padding: 0;
-    border-radius: 8px;
+    border: 1px dashed #d8d8d8;
+    border-radius: 0;
+    overflow: hidden;
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .piece {
-    border: 1px dashed #d8d8d8;
+    width: 100%;
+    height: 100%;
+    border: 0;
     border-radius: 0;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, outline-color 0.15s ease;
     -webkit-tap-highlight-color: transparent;
+}
+
+/* Une seule ligne entre les cases : aucun doublage, aucun espace */
+.piece:not(:nth-child(3n)) {
+    border-right: 1px dashed #d8d8d8;
+}
+
+.piece:nth-child(-n + 6) {
+    border-bottom: 1px dashed #d8d8d8;
 }
 
         .piece.selected {
             transform: scale(1.05);
-            border-color: #ffeb3b;
+            outline: 3px solid #ffeb3b;
+            outline-offset: -3px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
             z-index: 10;
         }
 
         .piece:hover:not(.selected) {
-            border-color: #e0e0e0;
+            outline: 1px solid #e0e0e0;
+            outline-offset: -1px;
         }
 
         .back-link {
@@ -206,14 +224,10 @@
             const screenWidth = window.innerWidth;
             state.boardSize = Math.min(Math.floor(screenWidth * 0.8), 500);
             state.gap = 0;
-
-            const padding = 4; 
-            state.pieceSize = Math.floor((state.boardSize - padding * 2 - state.gap * 2) / 3);
+            state.pieceSize = state.boardSize / GRID_SIZE;
 
             boardEl.style.width = state.boardSize + 'px';
             boardEl.style.height = state.boardSize + 'px';
-            boardEl.style.gridTemplateColumns = `repeat(3, ${state.pieceSize}px)`;
-            boardEl.style.gap = state.gap + 'px';
         }
 
         function initPuzzle() {
@@ -248,11 +262,6 @@
                 const origCol = pieceValue % GRID_SIZE;
                 const origRow = Math.floor(pieceValue / GRID_SIZE);
                 
-                // CORRECTION DU BUG D'AFFICHAGE SUR MOBILE :
-                // On force la taille en pixels sur chaque pièce
-                piece.style.width = state.pieceSize + 'px';
-                piece.style.height = state.pieceSize + 'px';
-
                 piece.style.backgroundImage = `url('${imgPath}')`;
                 piece.style.backgroundSize = `${bgSize}px ${bgSize}px`;
                 piece.style.backgroundPosition = `-${origCol * state.pieceSize}px -${origRow * state.pieceSize}px`;
